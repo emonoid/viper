@@ -8,38 +8,35 @@ class ProjectController {
   late Directory projectRoot;
 
   /// Initialize project root folder
- Future<void> initProject(String projectName) async {
+  Future<void> initProject(String projectName) async {
     // Request storage permission
     final status = await Permission.manageExternalStorage.request();
 
     if (status.isGranted) {
       // Get external storage root
       // final Directory? externalDir = await getExternalStorageDirectory();
-          var dir = Directory('/storage/emulated/0/MyFlutterProject');
-if (!await dir.exists()) {
-  await dir.create(recursive: true);
-}
-
-      if (dir == null) {
-        throw Exception("External storage not available");
+      var dir = Directory('/storage/emulated/0/Viper Projects');
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
       }
-
-
 
       // Create project folder
       projectRoot = Directory('${dir.path}/$projectName');
       if (!await projectRoot.exists()) {
         await projectRoot.create(recursive: true);
       }
-  
 
       print("Project created at: ${projectRoot.path}");
     } else {
       throw Exception("Storage permission denied");
     }
   }
+
   /// Create a folder inside the project
-  Future<Directory> createFolder(String folderName, [String? folderPath]) async {
+  Future<Directory> createFolder(
+    String folderName, [
+    String? folderPath,
+  ]) async {
     final path = folderPath != null
         ? '${projectRoot.path}/$folderPath/$folderName'
         : '${projectRoot.path}/$folderName';
@@ -51,7 +48,10 @@ if (!await dir.exists()) {
   }
 
   /// Create a file inside the project
-  Future<File> createFile(String filenameWithExtension, [String? folderPath]) async {
+  Future<File> createFile(
+    String filenameWithExtension, [
+    String? folderPath,
+  ]) async {
     final path = folderPath != null
         ? '${projectRoot.path}/$folderPath/$filenameWithExtension'
         : '${projectRoot.path}/$filenameWithExtension';
@@ -63,7 +63,11 @@ if (!await dir.exists()) {
   }
 
   /// Add or overwrite code in a file
-  Future<void> addCodeInFile(String filePath, String fileName, String code) async {
+  Future<void> addCodeInFile(
+    String filePath,
+    String fileName,
+    String code,
+  ) async {
     final file = File('${projectRoot.path}/$filePath/$fileName');
     if (!await file.exists()) {
       await file.create(recursive: true);
@@ -80,18 +84,22 @@ if (!await dir.exists()) {
     return '';
   }
 
-  Future makingProject()async{
-    
-  }
+  Future makingProject() async {}
 
   /// Export project as ZIP and return the file path
   Future<String> exportProject() async {
     final archive = Archive();
 
     // Recursively add files from project folder
-    await for (var entity in projectRoot.list(recursive: true, followLinks: false)) {
+    await for (var entity in projectRoot.list(
+      recursive: true,
+      followLinks: false,
+    )) {
       if (entity is File) {
-        final relativePath = entity.path.replaceFirst(projectRoot.path + '/', '');
+        final relativePath = entity.path.replaceFirst(
+          projectRoot.path + '/',
+          '',
+        );
         final data = await entity.readAsBytes();
         archive.addFile(ArchiveFile(relativePath, data.length, data));
       }
@@ -101,7 +109,8 @@ if (!await dir.exists()) {
 
     // Save zip in Downloads folder
     final downloadsDir = await getDownloadsDirectory();
-    final zipPath = '${downloadsDir?.path ?? projectRoot.path}/${projectRoot.uri.pathSegments.last}.zip';
+    final zipPath =
+        '${downloadsDir?.path ?? projectRoot.path}/${projectRoot.uri.pathSegments.last}.zip';
 
     final zipFile = File(zipPath);
     await zipFile.writeAsBytes(Uint8List.fromList(zipData!));
