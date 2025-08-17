@@ -2,19 +2,42 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ProjectController {
   late Directory projectRoot;
 
   /// Initialize project root folder
-  Future<void> initProject(String projectName) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    projectRoot = Directory('${appDir.path}/$projectName');
-    if (!await projectRoot.exists()) {
-      await projectRoot.create(recursive: true);
+ Future<void> initProject(String projectName) async {
+    // Request storage permission
+    final status = await Permission.manageExternalStorage.request();
+
+    if (status.isGranted) {
+      // Get external storage root
+      // final Directory? externalDir = await getExternalStorageDirectory();
+          var dir = Directory('/storage/emulated/0/MyFlutterProject');
+if (!await dir.exists()) {
+  await dir.create(recursive: true);
+}
+
+      if (dir == null) {
+        throw Exception("External storage not available");
+      }
+
+
+
+      // Create project folder
+      projectRoot = Directory('${dir.path}/$projectName');
+      if (!await projectRoot.exists()) {
+        await projectRoot.create(recursive: true);
+      }
+  
+
+      print("Project created at: ${projectRoot.path}");
+    } else {
+      throw Exception("Storage permission denied");
     }
   }
-
   /// Create a folder inside the project
   Future<Directory> createFolder(String folderName, [String? folderPath]) async {
     final path = folderPath != null
@@ -55,6 +78,10 @@ class ProjectController {
       return await file.readAsString();
     }
     return '';
+  }
+
+  Future makingProject()async{
+    
   }
 
   /// Export project as ZIP and return the file path
