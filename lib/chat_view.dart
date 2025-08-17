@@ -46,7 +46,7 @@ class _ChatScreenState extends State<ChatScreen> {
         await projectController.createFile(file['fileName'], file['filePath']);
         await projectController.addCodeInFile(
           file['filePath'],
-          file['fileName'],
+          file['fileName'], 
           file['code'],
         );
       }
